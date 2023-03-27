@@ -1,0 +1,10 @@
+ddos_security.settings:
+  type: config_object
+  label: 'DDoS Security Configuration'
+  mapping:
+    message:
+      label: 'Message to display to the user after DDoS attack'
+      type: text_format
+    403_message:
+      label: 'Message to display to the user before DDoS attack'
+      type: text_format

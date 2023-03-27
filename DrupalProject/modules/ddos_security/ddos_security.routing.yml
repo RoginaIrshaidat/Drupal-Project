@@ -1,0 +1,58 @@
+ddos_security.admin_config:
+  path: '/admin/config/ddos-security'
+  defaults:
+    _controller: '\Drupal\system\Controller\SystemController::systemAdminMenuBlockPage'
+    _title: 'DDoS Security Configurations'
+  requirements:
+    _permission: 'administer site configuration'
+
+ddos_security.settings:
+  path: '/admin/config/ddos-security-config/settings'
+  defaults:
+    _form: '\Drupal\ddos_security\Form\DdosSecurityConfigSettingsForm'
+    _title: 'DDoS Security Settings Form'
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+ddos_security.displaypage:
+  path: '/ddos-alert-message'
+  defaults:
+    _controller: '\Drupal\ddos_security\Controller\DdosSecurityPage::displayAlertMessage'
+    _title: 'DDoS Security Alert Message'
+  requirements:
+    _permission: 'access content'
+
+ddos_security.ddos_security_entry_search:
+  path: '/admin/config/ddos-security-entry/{search_keyword}'
+  defaults:
+    _controller: '\Drupal\ddos_security\Controller\DdosSecurityEntryList::entryList'
+    _title: 'DDoS Security Entry List'
+    search_keyword: ''
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+ddos_security.ddos_security_entry_delete:
+  path: '/admin/config/ddos-security-action/{action}/{ip}'
+  defaults:
+    _form: '\Drupal\ddos_security\Form\DdosSecurityEntryDeleteForm'
+    _title: 'DDoS Security Entry Delete Record'
+    action: ''
+    ip: ''
+  requirements:
+    _permission: 'administer site configuration'
+  options:
+    _admin_route: TRUE
+
+ddos_security.csv_export:
+ path: '/admin/config/ddos-security/export/csv'
+ defaults:
+   _controller: '\Drupal\ddos_security\Controller\DdosSecurityCSVReport::build'
+   _title: 'DDoS Security - Export Data Report as CSV File'
+ requirements:
+   _permission: 'administer site configuration'
+ options:
+   _admin_route: TRUE

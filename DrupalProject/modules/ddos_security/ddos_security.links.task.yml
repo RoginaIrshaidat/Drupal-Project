@@ -1,0 +1,4 @@
+ddos_security.settings:
+  route_name: ddos_security.settings
+  title: 'DDoS Security Configuration'
+  base_route: ddos_security.settings

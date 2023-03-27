@@ -1,0 +1,182 @@
+<?php
+
+/**
+ * @file
+ * This module provides a managed DDoS protection service for the website.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\Core\Render\Markup;
+use Drupal\Core\Url;
+use \Drupal\Core\Link;
+
+/**
+ * Implements hook_help().
+ */
+function ddos_security_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the ddos_security module.
+    case 'help.page.ddos_security':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('This module provides a managed DDoS protection service.') . '</p>';
+
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Implements hook_theme().
+ */
+function ddos_security_theme($existing, $type, $theme, $path) {
+  return [
+    'ddos_alert_message' => [
+      'variables' => [
+        'html_data' => NULL,
+      ],
+    ],
+  ];
+}
+
+/**
+ * Implements hook_cron().
+ */
+function ddos_security_cron() {
+  $config = \Drupal::config('ddos_security.settings');
+
+  // 86400  - 24 Hours.
+  $interval = 86400;
+  /* Request time */
+  $request_time = \Drupal::time()->getRequestTime();
+  $next_execution = \Drupal::state()->get('ddos_security.next_execution');
+  $next_execution = !empty($next_execution) ? $next_execution : 0;
+
+  if ($request_time >= $next_execution) {
+
+    if (!empty($config->get('enable_mail_log') && $config->get('enable_mail_log') == 1)) {
+      $mailManager = \Drupal::service('plugin.manager.mail');
+      $route_url = Url::fromRoute('ddos_security.csv_export', [], ['absolute' => TRUE]);
+      $report_link = Link::fromTextAndUrl(t('Click here to download'), $route_url)->toString();
+
+      $module = 'ddos_security';
+      $key = 'ddos_security';
+      $mailId = \Drupal::config('system.site')->get('mail');
+      $to = !empty($config->get('log_mail_id')) ? $config->get('log_mail_id') : $mailId;
+
+      $params['headers'] = [
+        'MIME-Version' => '1.0',
+        'Content-Type' => 'text/html; charset=UTF-8; format=flowed; delsp=yes',
+        'Content-Transfer-Encoding' => '8Bit',
+        'X-Mailer' => 'Drupal',
+      ];
+
+      $params['mail_subject'] = t('DDoS Security Alert') . '-' . date('c', $request_time);
+      $params['message'] = '
+      <html>
+      <body>
+      <h2> ' . t('DDoS Security Mail Log Notification') . ' </h2>
+      <h3>' . t('Please Download Report From Below Link') . '</h3>
+      ' . $report_link . '
+      </body>
+      </html>';
+
+      $langcode = $params['langcode'] = \Drupal::currentUser()->getPreferredLangcode();
+      $send = TRUE;
+      $result = $mailManager->mail($module, $key, $to, $langcode, $params, NULL, $send);
+
+      if ($result['result'] !== TRUE) {
+        \Drupal::messenger()->addMessage(t('There was a problem sending your message and it was not sent.'), 'error');
+      }
+      else {
+        \Drupal::messenger()->addMessage(t('Your message has been sent via mail.'));
+      }
+
+      \Drupal::logger('ddos_security')->notice(t('DDoS Security Mail Log Notification - Cron run completed.'));
+      \Drupal::messenger()->addMessage(t('DDoS Security Mail Log Notification executed at %time', ['%time' => date('c', $request_time)]));
+      \Drupal::state()->set('ddos_security.next_execution', $request_time + $interval);
+    }
+    else {
+      \Drupal::logger('ddos_security')->notice(t('DDoS Security Log Notification - Cron run completed.'));
+      \Drupal::messenger()->addMessage(t('DDoS Security Log Notification executed at %time', ['%time' => date('c', $request_time)]));
+      \Drupal::state()->set('ddos_security.next_execution', $request_time + $interval);
+    }
+  }
+
+}
+
+/**
+ * Implements hook_mail().
+ */
+function ddos_security_mail($key, &$message, $params) {
+  $options['langcode'] = $params['langcode'];
+
+  $headers = [
+    'MIME-Version'              => '1.0',
+    'Content-Type'              => 'text/html; charset=UTF-8; format=flowed; delsp=yes',
+    'Content-Transfer-Encoding' => '8Bit',
+    'X-Mailer'                  => 'Drupal',
+  ];
+
+  switch ($key) {
+    case 'ddos_security':
+      $config = \Drupal::config('ddos_security.settings');
+      $mailId = \Drupal::config('system.site')->get('mail');
+      $from = !empty($config->get('log_mail_id')) ? $config->get('log_mail_id') : $mailId;
+
+      $message['from'] = $from;
+      $message['subject'] = $params['mail_subject'];
+
+      // Add headers.
+      foreach ($headers as $key => $value) {
+        $message['headers'][$key] = $value;
+      }
+      // Usage of inline markup.
+      $message['body'][] = Markup::create($params['message']);
+      break;
+  }
+}
+
+/**
+ * Returns failed users entry with ip.
+ *
+ * @return bool
+ *   If the users match with database data.
+ */
+function ddos_security_user_access_status() {
+  // Query database to get failed login user events with ip.
+  $ip_query = \Drupal::database()->select('ddos_security', 'ds');
+  $ip_query->addField('ds', 'status');
+  $ip_query->condition('ds.ip_address', \Drupal::request()->getClientIp(), '=');
+  $ip_query->range(0, 1);
+  $ip_query->orderBy('ds.sno', 'DESC');
+  $ip_status = $ip_query->execute()->fetchField();
+
+  if ($ip_status) {
+    return $ip_status;
+  }
+
+  return FALSE;
+}
+
+/**
+ * Implements hook_preprocess_HOOK().
+ */
+function ddos_security_preprocess_page(&$variables) {
+
+  $moduleHandler = \Drupal::service('module_handler');
+
+  if ($moduleHandler->moduleExists('ddos_security')) {
+    $current_path = \Drupal::service('path.current')->getPath();
+    $ddosConfig = \Drupal::config('ddos_security.settings')->get('redirect_url');
+
+    if (!empty($ddosConfig) && strpos($current_path, $ddosConfig) === 0) {
+      foreach ($variables['page'] as $key => $value) {
+        if ($key != 'content') {
+          unset($variables['page'][$key]);
+        }
+      }
+    }
+  }
+}

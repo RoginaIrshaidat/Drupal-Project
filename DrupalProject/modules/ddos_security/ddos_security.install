@@ -1,0 +1,61 @@
+<?php
+
+/**
+ * @file
+ * Install, update and uninstall functions for the DDoS Security module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function ddos_security_schema() {
+  $schema['ddos_security'] = [
+    'description' => 'Stores the data about DDoS Security (sid, sno, IP address, status, ...).',
+    'fields' => [
+      'sid' => [
+        'description' => 'DDoS serial ID.',
+        'type' => 'serial',
+        'not null' => TRUE,
+      ],
+      'sno' => [
+        'description' => 'DDoS Protection Service Number.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => FALSE,
+      ],
+      'ip_address' => [
+        'type' => 'varchar_ascii',
+        'length' => 128,
+        'not null' => TRUE,
+        'default' => '',
+        'description' => 'IP address of the visitor.',
+      ],
+      'status' => [
+        'description' => 'Status of the DDoS Protection Service (restricted, block, unblock ...).',
+        'type' => 'varchar',
+        'length' => 64,
+        'not null' => FALSE,
+      ],
+      'created_date' => [
+        'type' => 'int',
+        'not null' => TRUE,
+        'description' => 'Unix timestamp of when event occurred.',
+      ],
+    ],
+    'primary key' => ['sid'],
+    'indexes' => [
+      'sno' => ['sno'],
+      'ip_address' => ['ip_address'],
+      'status' => ['status'],
+    ],
+  ];
+
+  return $schema;
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function ddos_security_uninstall() {
+  \Drupal::configFactory()->getEditable('ddos_security.settings')->delete();
+}

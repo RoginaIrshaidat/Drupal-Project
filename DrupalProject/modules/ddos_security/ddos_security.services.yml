@@ -1,0 +1,8 @@
+services:
+  ddos_security.attack_protection:
+    class: Drupal\ddos_security\EventSubscriber\AttackProtection
+    arguments: ["@request_stack", "@config.factory", "@logger.factory", "@database", "@current_user", "@session_manager", "@path.current", "@date.formatter", "@language_manager"]
+    tags:
+      - {name: event_subscriber}
+  ddos_security.crypt:
+    class: Drupal\ddos_security\Services\DdosCrypt

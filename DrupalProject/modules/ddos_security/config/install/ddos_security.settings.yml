@@ -1,0 +1,17 @@
+_core:
+  default_config_hash: JtmxYf263ym0hc3fTzZSG4lACYxgyW2VVubhdETyjCM
+message:
+  value: "<h2>Access Denied! You're blocked due to security reasons.</h2>\r\n\r\n<p>You don't have permission to view this site.</p>\r\n\r\n<p>Please send mail to administrator <strong><a href=\"mailto:webadmin@webmaster.com\">webadmin@webmaster.com</a></strong> and get your account unblocked.</p>\r\n"
+  format: full_html
+403_message:
+  value: "<h2>Error 403: Forbidden.</h2>\r\n\r\n<p>The page you're trying to access has restricted access.</p>\r\n\r\n<p>Please refer to your system administrator.</p>\r\n\r\n<p><a href=\"/\">GO BACK</a></p>\r\n"
+  format: full_html
+enable_ddos: 1
+redirect_url: /ddos-alert-message
+whitelisted_ip_addresses: ''
+whitelisted_pages: ''
+total_hits: '15'
+log_mail_id: ''
+enable_mail_log: 0
+enable_malicious_requests: 1
+malicious_requests_list: '%3Cscript,%3Cscript%3E,<script,<script>,%3C?php,<?php,alert(, %3C?,<?'

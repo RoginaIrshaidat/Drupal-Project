@@ -1,0 +1,12 @@
+name: DDoS Security
+description: "This module provides a managed DDoS protection service."
+package: Security
+core_version_requirement: ^8 || ^9 || ^10
+type: module
+dependencies:
+  - drupal:user
+
+# Information added by Drupal.org packaging script on 2022-12-19
+version: '8.x-1.0'
+project: 'ddos_security'
+datestamp: 1671431924

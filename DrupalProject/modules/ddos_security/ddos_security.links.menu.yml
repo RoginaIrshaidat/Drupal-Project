@@ -1,0 +1,27 @@
+ddos_security.admin_config:
+  title: 'DDoS Security Configurations'
+  description: 'Manage DDoS Security Settings.'
+  parent: system.admin_config
+  route_name: ddos_security.admin_config
+  weight: -40
+
+ddos_security.settings:
+  title: 'DDoS Security Settings'
+  parent: ddos_security.admin_config
+  description: 'Various settings for DDoS protection.'
+  route_name: ddos_security.settings
+  weight: 30
+
+ddos_security.search:
+  title: 'DDoS Security Entry List'
+  parent: ddos_security.admin_config
+  description: 'DDoS attack entry list based on users IP address and status.'
+  route_name: ddos_security.ddos_security_entry_search
+  weight: 40
+
+ddos_security.export:
+  title: 'DDoS Security - Export Data Report as CSV File'
+  parent: ddos_security.admin_config
+  description: 'DDoS attack Export Data Report with IP address and status as CSV file.'
+  route_name: ddos_security.csv_export
+  weight: 50
